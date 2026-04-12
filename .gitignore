@@ -53,3 +53,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Custome stuff
+cmake-build-debug
+vendored/
+.idea/
