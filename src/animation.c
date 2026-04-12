@@ -1,3 +1,64 @@
 //
 // Created by pascal on 12.04.26.
 //
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <time.h>
+
+#include "animation.h"
+
+static resolution_t resolution;
+static resolution_t rel_resolution;
+
+int init_particles(SDL_Renderer* renderer)
+{
+	SDL_GetRenderOutputSize(renderer, &resolution.x, &resolution.y);
+	resolution.sum = resolution.x * resolution.y;
+
+	rel_resolution.x = resolution.x / PARTICLE_SIZE_PX_AREA;  // we discard the remainder
+	rel_resolution.y = resolution.y / PARTICLE_SIZE_PX_AREA; //		   ...
+	rel_resolution.sum = rel_resolution.x * rel_resolution.y;
+	// calculate how we have to distribute the particles
+	// we use int so the result gets floored
+	int probability = rel_resolution.sum / (float)PARTICLES_COUNT;
+	int probability_count = probability;
+
+	srand(time(NULL));  // seed the random number generator
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // white particles
+	// iterate through the display along the x-axis, marking where a potential pixel block starts
+	// particle == block
+	for (int abs_block_y = 0; abs_block_y < resolution.y; abs_block_y+=PARTICLE_SIZE_PX_AREA)
+	{
+		for (int abs_block_x = 0; abs_block_x < resolution.x; abs_block_x+=PARTICLE_SIZE_PX_AREA)
+		{
+			// if we reached the end of the display width, jmp to the next particle by skipping the next n-1 rows of pixels
+			if (! abs_block_x % resolution.x)
+			{
+				abs_block_x = 0;
+				abs_block_y += PARTICLE_SIZE_PX_AREA-1;
+			}
+			if (GET_RAND(1, probability_count) > 1)  // the possibility of a block spawning is 1/probability
+			{
+				// we have to make the prob. of a block spawning bigger with every try
+				// this guarantees that eventually a block will spawn
+				probability_count -= 1/(float)probability;  // for now this is good enough, bit this will be too imprecise in the future!
+				continue;
+			}
+			probability_count = probability;  // reset probability
+			// iterate through all the pixels of a particle
+			printf("Block at (%d, %d)\n", abs_block_x, abs_block_y);
+			for (int rel_block_y = 0; rel_block_y < PARTICLE_SIZE_PX_LINE; rel_block_y++)
+			{
+				for (int rel_block_x = 0; rel_block_x < PARTICLE_SIZE_PX_LINE; rel_block_x++)
+				{
+					SDL_RenderPoint(renderer, abs_block_x+rel_block_x, abs_block_y+rel_block_y);
+				}
+			}
+		}
+	}
+	return 0;
+}
