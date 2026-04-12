@@ -2,10 +2,15 @@
 // Created by pascal on 12.04.26.
 //
 
-extern void hello_world();
+#include "SDL3/SDL_init.h"
+
+#include "window.h"
+
 
 int main()
 {
-	hello_world();
+	init_app();
+	run_app();
+	quit_app();
 	return 0;
 }
