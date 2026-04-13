@@ -5,10 +5,11 @@
 #define PARTICLE_SIZE_PX_LINE 4  //  width/heigth of each particle
 #define PARTICLE_SIZE_PX_AREA (PARTICLE_SIZE_PX_LINE * PARTICLE_SIZE_PX_LINE)  // each particle is of size line*line
 #define PARTICLES_SPEED 1	// speed at which the particles will move
-#define PARTICLES_MOUSE_DISTANCE_PX 100  // distance (int pixels) at which particles connect with the mouse
+#define PARTICLES_MOUSE_DISTANCE_PX 200  // distance (int pixels) at which particles connect with the mouse
 #define PARTICLE_RESPAWN_DELAY 30  // for description see struct particle_t
 
-#define GET_RAND(MIN, MAX) (MIN + rand() % (MAX+1 - MIN))
+#define GET_RAND_INT(MIN, MAX) ( MIN + rand() % (MAX+1 - MIN) )
+#define GET_RAND_FLOAT(MIN, MAX) ( MIN + ((double)rand() / RAND_MAX) * (MAX - MIN) )
 
 typedef struct
 {
