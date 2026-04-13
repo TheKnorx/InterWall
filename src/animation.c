@@ -9,25 +9,31 @@
 #include <time.h>
 
 #include "animation.h"
+#include "common.h"
 
 static resolution_t resolution;
+static particle_t particles_array[PARTICLES_COUNT];
 
 int init_particles(SDL_Renderer* renderer)
 {
+	// seed the random number generator
+	srand(time(nullptr));
+
+	// Next get resolution of current display
 	SDL_GetRenderOutputSize(renderer, &resolution.x, &resolution.y);
 	resolution.sum = resolution.x * resolution.y;
 
-	const int rel_resolution = resolution.x * resolution.y / PARTICLE_SIZE_PX_AREA;
+	// Calculate the probability of which we have to spawn the particles
+	const int rel_resolution = resolution.sum / (PARTICLE_SIZE_PX_AREA * PARTICLE_SIZE_PX_AREA);
 	// calculate how we have to distribute the particles
 	// we use int so the result gets floored
-	int probability = rel_resolution / PARTICLES_COUNT;  // we discard the remainder
+	const int probability = rel_resolution / PARTICLES_COUNT;  // we discard the remainder
 	int probability_count = probability;
-
-	srand(time(NULL));  // seed the random number generator
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // white particles
 	// iterate through the display along the x-axis, marking where a potential pixel block starts
 	// particle == block
+	int particles_count;
 	for (int abs_block_y = 0; abs_block_y < resolution.y; abs_block_y+=PARTICLE_SIZE_PX_AREA)
 	{
 		for (int abs_block_x = 0; abs_block_x < resolution.x; abs_block_x+=PARTICLE_SIZE_PX_AREA)
@@ -57,5 +63,11 @@ int init_particles(SDL_Renderer* renderer)
 			}
 		}
 	}
+	return 0;
+}
+
+int end_particles()
+{
+	// nop for now
 	return 0;
 }
