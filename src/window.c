@@ -7,13 +7,8 @@
 #include <SDL3/SDL_main.h>
 
 #include "window.h"
-
 #include "animation.h"
-
-#define THROW_ERROR(MSG, ...) do {		\
-	fprintf(stderr, MSG "\n", ##__VA_ARGS__);  \
-	return -1;  \
-}while (0);
+#include "common.h"
 
 static SDL_Window *window = nullptr;
 static SDL_Renderer *renderer = nullptr;
@@ -38,10 +33,9 @@ int init_app()
 		THROW_ERROR("Couldn't create window and renderer: %s", SDL_GetError());
 
 	SDL_SetRenderVSync(renderer, 1);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 250);
-	SDL_RenderClear(renderer);
 	init_particles(renderer);
-	SDL_RenderPresent(renderer);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
 	return 0;
 }
 
@@ -60,9 +54,10 @@ int run_app()
 				/* or */	(event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_Q && event.key.mod & SDL_KMOD_LCTRL)
 				) running = 0;
 		}
-		//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 250);
-		//SDL_RenderClear(renderer);
-		//SDL_RenderPresent(renderer);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+		render_particles(renderer);
+		SDL_RenderPresent(renderer);
 		SDL_Delay(16);  // ~60FPS
 	}
 	return 0;
@@ -70,6 +65,7 @@ int run_app()
 
 int quit_app()
 {
+	end_particles();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
