@@ -55,19 +55,10 @@ int init_particles(SDL_Renderer* renderer)
 			probability_count = probability;  // reset probability
 			// iterate through all the pixels of a particle
 			printf("Block %d at (%d, %d)\n", particles_amount, abs_block_x, abs_block_y);
-			// for (int rel_block_y = 0; rel_block_y < PARTICLE_SIZE_PX_LINE; rel_block_y++)
-			// {
-			// 	for (int rel_block_x = 0; rel_block_x < PARTICLE_SIZE_PX_LINE; rel_block_x++)
-			// 	{
-			// 		particles_array[particles_amount] = (particle_t){
-			// 			.x = (float)abs_block_x, .y = (float)abs_block_y,
-			// 			.direction = GET_RAND(0, 360) * (M_PI / 180.0f)  // get the radians
-			// 			};
-			// 	}
-			// }
 			particles_array[particles_amount] = (particle_t){
 				.x = (float)abs_block_x, .y = (float)abs_block_y,
-				.direction = GET_RAND(0, 360) * (M_PI / 180.0f)  // get the radians
+				.direction = GET_RAND(0, 360) * (M_PI / 180.0f),  // get the radians
+				.respawn_delay = 0
 				};
 			particles_amount++;
 		}
@@ -77,20 +68,46 @@ int init_particles(SDL_Renderer* renderer)
 
 int render_particle_point(SDL_Renderer* renderer, const int particle_count)
 {
+	particle_t* particle_ptr = &particles_array[particle_count];
+	if (particle_ptr->respawn_delay)
+	{
+		if (! --particle_ptr->respawn_delay)
+		{
+			float* particle_x = &particle_ptr->x;
+			const float* particle_y = &particle_ptr->y;
+			/* To save battery, we implement this rather "lazy"
+			* we just use the old particle and remap it to the other site of the display*/
+			*particle_ptr = (particle_t){
+				// .x = *particle_x > (float)resolution.x || *particle_x < (float)resolution.x ?  *particle_x - (float)resolution.x : *particle_x,
+				// .y = *particle_y > (float)resolution.y || *particle_y < (float)resolution.y ?  *particle_y - (float)resolution.y : *particle_y,
+				.x = *particle_x > (float)resolution.x ? *particle_x - (float)resolution.x : (*particle_x < (float)resolution.x ? (float)resolution.x - *particle_x : *particle_x),
+				.y = *particle_y > (float)resolution.y ? *particle_y - (float)resolution.y : (*particle_y < (float)resolution.y ? (float)resolution.y - *particle_y : *particle_y),
+				.direction = particle_ptr->direction,
+				.respawn_delay = 0
+			};
+		}
+		else return 1;
+	}
 	for (int rel_block_y = 0; rel_block_y < PARTICLE_SIZE_PX_LINE; rel_block_y++)
 	{
 		for (int rel_block_x = 0; rel_block_x < PARTICLE_SIZE_PX_LINE; rel_block_x++)
 		{
-			const float x = particles_array[particle_count].x + (float)rel_block_x;
-			const float y = particles_array[particle_count].y + (float)rel_block_y;
-
-			// particles_array[particle_count] = (particle_t){
-			// 	.x = x, // + cosf(particles_array[particle_count].direction) * PARTICLES_SPEED,
-			// 	.y = y //+ sinf(particles_array[particle_count].direction) * PARTICLES_SPEED
-			// };
+			const float x = particle_ptr->x + (float)rel_block_x;
+			const float y = particle_ptr->y + (float)rel_block_y;
 			SDL_RenderPoint(renderer, x, y);
 		}
 	}
+	const float x = particle_ptr->x + cosf(particle_ptr->direction) * PARTICLES_SPEED;
+	const float y = particle_ptr->y + sinf(particle_ptr->direction) * PARTICLES_SPEED;
+	*particle_ptr = (particle_t){
+		.x = x,
+		.y = y,
+		.direction = particle_ptr->direction,
+		.respawn_delay = (
+			(int)x > resolution.x || (int)y > resolution.y || (int)x < 0 || (int)y < 0
+			? PARTICLE_RESPAWN_DELAY : 0
+			)
+	};
 	return 0;
 }
 
