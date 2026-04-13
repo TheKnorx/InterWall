@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+set (CMAKE_CXX_STANDARD 23)  # this could work with c11, but to be sure we only support c23 and above
 project(InterWall LANGUAGES C)
 
 # set the output directory for built objects.
