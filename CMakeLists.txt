@@ -13,4 +13,4 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_executable(main src/main.c src/window.c src/animation.c)
 
 # Link to the actual SDL3 library.
-target_link_libraries(main PRIVATE SDL3::SDL3)
+target_link_libraries(main PRIVATE SDL3::SDL3 m)
