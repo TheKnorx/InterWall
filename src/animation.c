@@ -11,19 +11,16 @@
 #include "animation.h"
 
 static resolution_t resolution;
-static resolution_t rel_resolution;
 
 int init_particles(SDL_Renderer* renderer)
 {
 	SDL_GetRenderOutputSize(renderer, &resolution.x, &resolution.y);
 	resolution.sum = resolution.x * resolution.y;
 
-	rel_resolution.x = resolution.x / PARTICLE_SIZE_PX_AREA;  // we discard the remainder
-	rel_resolution.y = resolution.y / PARTICLE_SIZE_PX_AREA; //		   ...
-	rel_resolution.sum = rel_resolution.x * rel_resolution.y;
+	const int rel_resolution = resolution.x * resolution.y / PARTICLE_SIZE_PX_AREA;
 	// calculate how we have to distribute the particles
 	// we use int so the result gets floored
-	int probability = rel_resolution.sum / (float)PARTICLES_COUNT;
+	int probability = rel_resolution / PARTICLES_COUNT;  // we discard the remainder
 	int probability_count = probability;
 
 	srand(time(NULL));  // seed the random number generator
@@ -55,7 +52,7 @@ int init_particles(SDL_Renderer* renderer)
 			{
 				for (int rel_block_x = 0; rel_block_x < PARTICLE_SIZE_PX_LINE; rel_block_x++)
 				{
-					SDL_RenderPoint(renderer, abs_block_x+rel_block_x, abs_block_y+rel_block_y);
+					SDL_RenderPoint(renderer, (float)(abs_block_x+rel_block_x), (float)(abs_block_y+rel_block_y));
 				}
 			}
 		}
